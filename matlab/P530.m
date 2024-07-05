@@ -231,7 +231,7 @@ classdef P530
             %
             % F1          m       float    Radius of the first Fresnel ellipsoid
 
-            F1 = 17.3 * sqrt(d1*d2/f*(d1 + d2));    % (3)
+            F1 = 17.3 * sqrt(d1*d2/(f*(d1 + d2)));    % (3)
 
         end
 
@@ -1350,5 +1350,5 @@ classdef P530
         end
 
     end
-    
+
 end
