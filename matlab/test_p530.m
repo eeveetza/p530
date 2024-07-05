@@ -44,3 +44,5 @@ Ap = p530.rain_attenuation_statistics(lon, lat, d, f, p, pol, el);
 Pxp = p530.XPD_outage_clear_air(lon, lat, d, he, hr, ht, f, cir, xpdg);
 
 Pxpr = p530.XPD_outage_precipitation(lon, lat, d, f, pol, el, cir, U0, xpif);
+
+rain_snow_flag = p530.preliminary_test(ht, hr, lon, lat);
