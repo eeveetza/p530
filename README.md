@@ -1,4 +1,4 @@
-# MATLAB/Octave Implementation of Recommendation ITU-R P.530-18
+# MATLAB/Octave Implementation of Recommendation ITU-R P.530
 
 This code repository contains a MATLAB/Octave software implementation of parts of Recommendation [ITU-R P.530-18](https://www.itu.int/rec/R-REC-P.530/en) with propagation data and prediction methods required for the design of terrestrial line-of-sight systems.    
 
