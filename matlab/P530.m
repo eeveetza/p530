@@ -292,15 +292,12 @@ classdef P530
             % and can be set to zero for shorter paths
 
             %% Step 1 of §2.3.1
-            % Estimate the geoclimatic factor K for the average worst month
-            % from from table LogK
-            LOGK = DigitalMaps_LogK();
-            DN75 = DigitalMaps_dN75();
-            LON =  DigitalMaps_Lon();
-            LAT =  DigitalMaps_Lat();
+            % Estimate the geoclimatic factor K and dN75 for the average worst month
+            % from from table LogK and dN75
 
-            logK_m = interp2(LON, LAT, LOGK, lon, lat);
-            dN75 = interp2(LON, LAT, DN75, lon, lat);
+            logK_m = get_interp2(obj, 'LogK', lon, lat);
+
+            dN75 = get_interp2(obj, 'dN75', lon, lat);
 
             K = 10.^(logK_m);
 
@@ -834,18 +831,8 @@ classdef P530
 
             if isempty(R001)
                 % estimate the value from Recommendation ITU-R P.837
-                % load the maps - create functions instead of loading files
-                % to improve speed
 
-                %                 LAT  = load('./R-REC-P.837-Maps/LAT_R001.TXT'); % -90 to 90
-                %                 LON  = load('./R-REC-P.837-Maps/LON_R001.TXT'); % -180 to 180
-                %                 R001map = load('./R-REC-P.837-Maps/R001.TXT');
-
-                LAT = DigitalMaps_Lat_R001();
-                LON = DigitalMaps_Lon_R001();
-                R001map = DigitalMaps_R001();
-                %
-                R001 = interp2(LON,LAT,R001map,lon,lat);
+                R001 = get_interp2(obj, 'R001', lon, lat);
 
             end
 
@@ -941,11 +928,7 @@ classdef P530
 
             % Obtain the mean rain height (masl) from Recommendation ITU-R P.839
 
-            h0 = DigitalMaps_h0();
-            LON = DigitalMaps_Lon_h0();
-            LAT = DigitalMaps_Lat_h0();
-
-            hrainm = interp2(LON, LAT, h0, lon, lat);
+            hrainm = get_interp2(obj, 'h0', lon, lat);
 
             if (hhi <= hrainm - 3600)
                 rain_snow_flag = 1;
@@ -1349,6 +1332,317 @@ classdef P530
 
         end
 
+        function y = get_interp2(obj, mapstr, phie, phin)
+            %get_inter2 Interpolates the value from Map at a given phie,phin
+            %
+            %     Input parameters:
+            %     mapstr  -   string pointing to the radiometeorological map
+            %     phie    -   Longitude, positive to east (deg) (-180, 180)
+            %     phin    -   Latitude, positive to north (deg) (-90, 90)
+            %
+            %     Output parameters:
+            %     y      -    Interpolated value from the radiometeorological map at the point (phie,phin)
+            %
+            %     Rev   Date        Author                          Description
+            %     -------------------------------------------------------------------------------
+            %     v0    09SEP24     Ivica Stevanovic, OFCOM         Initial version
+
+
+            if (phin < -90 || phin > 90)
+                error ('Latitude must be within the range -90 to 90 degrees');
+            end
+
+            if (phie < -180 || phie > 180)
+                error('Longitude must be within the range -180 to 180 degrees');
+            end
+
+            errorstr = sprintf(['DigitalMaps_%s() not found. \n' ...
+                '\nBefore running get_interp2, make sure to: \n' ...
+                '    1. Download and extract the required maps to ./private/maps:\n' ...
+                '        - From ITU-R P.530-18: LogK.csv and dN75.csv\n' ...
+                '        - From ITU-R P.2001-5: Esarain_Beta_v5.txt, Esarain_Mt_v5.txt, Esarain_Pr6_v5.txt, h0.txt\n' ...
+                '        - From ITU-R P.837-7: R001.TXT\n' ...
+                '    2. Run the script initiate_digital_maps.m to generate the necessary functions.\n'], mapstr);
+
+
+            switch mapstr
+
+                case 'DN50'
+                    try
+                        map = DigitalMaps_DN50();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 121;
+                    nc = 241;
+                    spacing = 1.5;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+
+                case 'N050'
+                    try
+                        map = DigitalMaps_N050();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 121;
+                    nc = 241;
+                    spacing = 1.5;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+                case 'h0'
+                    try
+                        map = DigitalMaps_h0();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 121;
+                    nc = 241;
+                    spacing = 1.5;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+
+                case 'Esarain_Pr6'
+                    try
+                        map = DigitalMaps_Esarain_Pr6_v5();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 161;
+                    nc = 321;
+                    spacing = 1.125;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+                case 'Esarain_Mt'
+                    try   map = DigitalMaps_Esarain_Mt_v5();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 161;
+                    nc = 321;
+                    spacing = 1.125;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+                case 'Esarain_Beta'
+                    try
+                        map = DigitalMaps_Esarain_Beta_v5();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 161;
+                    nc = 321;
+                    spacing = 1.125;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with 0
+                    longitudeOffset = phie;
+                    if phie < 0
+                        longitudeOffset = phie + 360;
+                    end
+
+                case 'dN75'
+                    try
+                        map = DigitalMaps_dN75();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 721;
+                    nc = 1441;
+                    spacing = 0.25;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with -180
+                    longitudeOffset = phie + 180;
+
+
+                case 'LogK'
+                    try
+                        map = DigitalMaps_LogK();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 721;
+                    nc = 1441;
+                    spacing = 0.25;
+                    % lat starts with 90
+                    latitudeOffset = 90 - phin;
+                    % lon starts with -180
+                    longitudeOffset = phie + 180;
+
+
+                case 'R001'
+                    try
+                        map = DigitalMaps_R001();
+                    catch
+                        error(errorstr);
+                    end
+                    nr = 1441;
+                    nc = 2881;
+                    spacing = 0.125;
+                    % lat starts with -90
+                    latitudeOffset = phin + 90;
+                    % lon starts with -180
+                    longitudeOffset = phie + 180;
+
+                otherwise
+
+                    error('Error in function call. Uknown map: %s.\n',mapstr);
+            end
+
+
+        latitudeIndex  = floor(latitudeOffset / spacing)  + 1;
+        longitudeIndex = floor(longitudeOffset / spacing) + 1;
+
+        latitudeFraction  = (latitudeOffset / spacing)  - (latitudeIndex  - 1);
+        longitudeFraction = (longitudeOffset / spacing) - (longitudeIndex - 1);
+
+        val_ul = map(latitudeIndex, longitudeIndex);
+        val_ur = map(latitudeIndex, min(longitudeIndex + 1, nc));
+        val_ll = map(min(latitudeIndex + 1, nr), longitudeIndex);
+        val_lr = map(min(latitudeIndex + 1, nr), min(longitudeIndex + 1, nc));
+
+        y1 = longitudeFraction  * ( val_ur - val_ul ) + val_ul;
+        y2 = longitudeFraction  * ( val_lr - val_ll ) + val_ll;
+        y  = latitudeFraction * ( y2 - y1 ) + y1;
+
+        return
+    end
+
+        function y = test_get_interp2(obj, mapstr)
+            % This script tests the interpolation routines against MATLAB 2D
+            % interpolation routines
+
+            % N-random latitudes and longitudes to define N^2 points in which we will
+            % be interpolating
+            N = 10;
+            Phin = (2*rand(N,1)-1)*90;
+            Phie = (2*rand(N,1)-1)*180;
+
+
+            N1 = zeros(length(Phin),length(Phie));
+            N2 = zeros(length(Phin),length(Phie));
+
+            fprintf(1,'Testing get_interp2(''%s'',.):\n',mapstr)
+
+            tic
+            for nn = 1:length(Phin)
+                for ee = 1:length(Phie)
+                    phim_e = Phie(ee);
+                    phim_n = Phin(nn);
+                    N2(nn,ee) = get_interp2(obj, mapstr, phim_e,phim_n);
+
+                end
+            end
+            toc
+
+
+            switch mapstr
+                case 'DN50'
+                    map = DigitalMaps_DN50();
+                    spacing = 1.5;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+                case 'N050'
+                    map = DigitalMaps_N050();
+                    spacing = 1.5;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+                case 'h0'
+                    map = DigitalMaps_h0();
+                    spacing = 1.5;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+
+                case 'Esarain_Pr6'
+                    map = DigitalMaps_Esarain_Pr6_v5();
+                    spacing = 1.125;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+                case 'Esarain_Mt'
+                    map = DigitalMaps_Esarain_Mt_v5();
+                    spacing = 1.125;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+                case 'Esarain_Beta'
+                    map = DigitalMaps_Esarain_Beta_v5();
+                    spacing = 1.125;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = 0:spacing:360;
+
+                case 'dN75'
+                    map = DigitalMaps_dN75();
+                    spacing = 0.25;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = -180:spacing:180;
+
+                case 'LogK'
+                    map = DigitalMaps_LogK();
+                    spacing = 0.25;
+                    latcnt = 90:-spacing:-90;               
+                    loncnt = -180:spacing:180;
+
+                case 'R001'
+                    map = DigitalMaps_R001();
+                    spacing = 0.125;
+                    latcnt = -90:spacing:90;               
+                    loncnt = -180:spacing:180;
+            end
+
+
+            [LON,LAT] = meshgrid(loncnt, latcnt);
+
+
+            tic
+            for nn = 1:length(Phin)
+                for ee = 1:length(Phie)
+                    phim_e = Phie(ee);
+                    phim_n = Phin(nn);
+
+                    N1(nn,ee) = interp2(LON,LAT,map,phim_e,phim_n);
+
+
+                end
+            end
+            toc
+
+            fprintf(1,'Maximum deviation from MATLAB interpolation is: %g\n', max(max(abs(N2-N1))) );
+
+        end
     end
 
 end

@@ -5,14 +5,44 @@ This code repository contains a MATLAB/Octave software implementation of parts o
 
 The following table describes the structure of the folder `./matlab/` containing the MATLAB/Octave implementation of Recommendation ITU-R P.530.
 
-Methods using digital data maps need to be optimized. They run relatively slow on MATLAB/Octave on MacOS. They seem to be running OK on MATLAB on MS Windows OS.
-
 This is a very first implementation. It has not been tested and may contain errors and bugs.
 
 | File/Folder               | Description                                                         |
 |----------------------------|---------------------------------------------------------------------|
 |`P530.m`                | MATLAB class with methods implementing Recommendation ITU-R P.530-18          |
+|`initiate_digital_maps.m`| MATLAB script that processes the ITU-R maps and generates the necessary functions. It needs to be run prior to using this software implementation. For details, see [Integrating ITU Digital Products](#integrating-itu-digital-products). |
 |`test_p530.m`          | MATLAB script (under development) that will be used to validate the implementation of this Recommendation  |
+
+
+## Integrating ITU Digital Products
+
+This software uses ITU digital products that are integral part of Recommendations. These products must not be reproduced or distributed without explicit written permission from the ITU.
+
+### Setup Instructions
+
+1. **Download and extract the required maps** to `./private/maps`:
+
+   - From [ITU-R P.530-18](https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.530-18-202109-I!!ZIP-E.zip):
+     - `LogK.csv`
+     - `dN75.csv`
+
+   - From [ITU-R P.2001-5](https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.2001-5-202308-I!!ZIP-E.zip):
+     - `Esarain_beta_v5.txt`
+     - `Esarain_Mt_v5.txt`
+     - `Esarain_Pr6_v5.txt`
+     - `h0.txt`
+
+   - From [ITU-R P.837-7](https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.837-7-201706-I!!ZIP-E.zip):
+     - `R001.TXT`
+
+2. **Run the script** `initiate_digital_maps.m` to generate the necessary functions for retrieving and interpolating data from from the maps.
+
+### Notes
+
+- Ensure all files are placed in `./private/maps` before running the script.
+- The script processes the maps, which are critical for the software’s functionality.
+- The resulting `*.m` files are placed in the folder `./private`.
+
 
 
 ## Methods implemented in class P530
